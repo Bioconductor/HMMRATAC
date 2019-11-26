@@ -113,7 +113,118 @@ HMMRATAC <- function(bam,
                      modelonly = FALSE)
 {
 
+args <- c()
+
+if(missing(bam)) {
+    stop("The mandatory argument 'bam' is missing.")
+}
+args <- c(args, '-b', bam)
+
+if(missing(index)) {
+    stop("The mandatory argument 'index' is missing.")
+}
+args <- c(args, '-i', index)
+
+if(missing(genome)) {
+    stop("The mandatory argument 'genome' is missing.")
+}
+args <- c(args, '-g', genome)
+
+if(!missing(means)) {
+    ## FIXME: parse means
+    args <- c(args, '-m', means)
+}
+
+if(!missing(stddev)) {
+    ## FIXME: parse stddev
+    args <- c(args, '-s', stddev)
+}
+
+if(!missing(fragem)) {
+    if (fragem) fragem <- 'True'
+    else fragem <- 'False'
+    args <- c(args, '-f', fragem)
+}
+
+if(!missing(minmapq)) {
+    args <- c(args, '-q', minmapq)
+}
+
+if(!missing(upper)) {
+    args <- c(args, '-u', upper)
+}
+
+if(!missing(lower)) {
+    args <- c(args, '-l', lower)
+}
+
+if(!missing(zscore)) {
+    args <- c(args, '-z', zscore)
+}
+
+if(!missing(output_dir)) {
+    args <- c(args, '-o', output_dir)
+}
+
+if(!missing(blacklist)) {
+    args <- c(args, '-e', blacklist)
+}
+
+if(!missing(peaks)) {
+    args <- c(args, '-p', peaks)
+}
+
+if(!missing(kmeans)) {
+    args <- c(args, '-k', kmeans)
+}
+
+if(!missing(training)) {
+    args <- c(args, '-t', training)
+}
+
+if(!missing(bedgraph)) {
+    args <- c(args, '--bedgraph', bedgraph)
+}
+
+if(!missing(minlen)) {
+    args <- c(args, '--minlen', minlen)
+}
+
+if(!missing(score)) {
+    args <- c(args, '--score', score)
+}
+
+if(!missing(bgscore)) {
+    args <- c(args, '--bgscore', bgscore)
+}
+
+if(!missing(trim)) {
+    args <- c(args, '--trim', trim)
+}
+
+if(!missing(window)) {
+    args <- c(args, '--window', window)
+}
+
+if(!missing(model)) {
+    args <- c(args, '--model', model)
+}
+
+if(!missing(zscore)) {
+    args <- c(args, '--modelonly', modelonly)
+}
+
+
+
 # .jcall("HMMR_ATAC.Main_HMMR_Driver", "V", "main", .jarray(list(), "java/lang/String"))
 hmmr <- rJava::new(J("HMMR_ATAC.Main_HMMR_Driver"))
-hmmr$main(.jarray(list(), "java/lang/String"))
+
+browser()
+
+#args <- as.list(args)
+
+#args <- lapply(args, function(x) {.jnew}
+
+hmmr$main(args)
+#hmmr$main(.jarray(args, "java/lang/String"))
 }
