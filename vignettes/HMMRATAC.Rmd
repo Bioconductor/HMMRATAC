@@ -1,0 +1,56 @@
+---
+title: "HMMRATAC Guide"
+author: "Daniel Van Twisk"
+date: "`r BiocStyle::doc_date()`"
+package: "`r BiocStyle::pkg_ver('HMMRATAC')`"
+bibliography: bibliography.bib
+csl: nature.csl
+vignette: >
+  %\VignetteIndexEntry{HMMRATAC Vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+output:
+  BiocStyle::html_document
+---
+
+```{r, echo=FALSE, results="hide", warning=FALSE, message=FALSE}
+suppressPackageStartupMessages({
+  library(ATACseqQC)
+  library(ChIPpeakAnno)
+  library(BSgenome.Hsapiens.UCSC.hg19)
+  library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+  library(phastCons100way.UCSC.hg19)
+  library(MotifDb)
+  library(GenomicAlignments)
+})
+knitr::opts_chunk$set(warning=FALSE, message=FALSE)
+```
+
+# Introduction
+Assay for Transposase-Accessible Chromatin using sequencing (ATAC-seq) is a
+method to identify open chromatin regions in a genome-wide manner. This method
+involves using a transposase to cut sections of accessable DNA selectively [@buenostro2013transposition].
+ATAC-seq identifies regions highly corrrelated with similar methods used to
+identify these regions, DNase-seq [@boyle2008high] and FAIRE-seq [@giresi2007faire]. ATAC-seq has become a popular
+method for this task because it is faster and easier to perform, has a higher
+signal to noise ration, and does not require as large of an amount of biological
+samples when comapred with other methods [@buenostro2013transposition].
+
+Hidden Markov ModeleR for ATAC-seq (HMMRATAC) is a semi-supervised machine
+learning appraoch for identifying open chromatin regions from ATAC-seq data.
+[@hmmratac2019tarbell]
+
+This Bioconductor package has been made to utilize the original Java program for
+HMMRATAC and make it availiable for use within Bioconductor.
+
+# Installation
+```{r eval=FALSE}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install('HMMRATAC')
+```
+
+# Session Info
+```{r sessionInfo}
+sessionInfo()
+```
