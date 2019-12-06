@@ -38,7 +38,17 @@ samples when comapred with other methods [@buenostro2013transposition].
 
 Hidden Markov ModeleR for ATAC-seq (HMMRATAC) is a semi-supervised machine
 learning appraoch for identifying open chromatin regions from ATAC-seq data.
-[@hmmratac2019tarbell]
+The idea behind HMMRATAC is conceptualized upon the idea of "decomposition and
+integration. The ATAC-seq data is decomposed into different layers of coverage
+signals corresponding to the sequnced DNA fragments originated from nucleosomal
+regions. The relationship between the layers of signals at open chromatin
+regions is then learned using a Hidden Markov Model and utilized for predicting
+open chromatin. HMMRATAC is capable of outperforming similar methods in
+identifying chromatin structure and transcription factor binding sites. 
+
+[@hmmratac2019tarbell] 
+A typical analysis pipline begins with aligning sequencing reads to a reference
+genome. 
 
 This Bioconductor package has been made to utilize the original Java program for
 HMMRATAC and make it availiable for use within Bioconductor.
@@ -49,6 +59,10 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install('HMMRATAC')
 ```
+
+# Example Pipeline
+
+We start by first obtaining a 
 
 # Session Info
 ```{r sessionInfo}
