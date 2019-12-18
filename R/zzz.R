@@ -1,3 +1,4 @@
+
 .onLoad <- function(lib, pkg)
 {
     rJava::.jpackage(pkg, jars = 'HMMRATAC.jar')

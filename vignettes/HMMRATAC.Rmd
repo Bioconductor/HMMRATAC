@@ -1,6 +1,6 @@
 ---
 title: "HMMRATAC Guide"
-author: "Daniel Van Twisk"
+author: "Daniel Van Twisk, Evan Tarbell"
 date: "`r BiocStyle::doc_date()`"
 package: "`r BiocStyle::pkg_ver('HMMRATAC')`"
 bibliography: bibliography.bib
@@ -45,8 +45,8 @@ regions. The relationship between the layers of signals at open chromatin
 regions is then learned using a Hidden Markov Model and utilized for predicting
 open chromatin. HMMRATAC is capable of outperforming similar methods in
 identifying chromatin structure and transcription factor binding sites. 
-
 [@hmmratac2019tarbell] 
+
 A typical analysis pipline begins with aligning sequencing reads to a reference
 genome. 
 
@@ -62,7 +62,23 @@ BiocManager::install('HMMRATAC')
 
 # Example Pipeline
 
-We start by first obtaining a 
+We start by first obtaining a list of 
+
+## HMMRATAC
+
+First off, HMMRATAC requires a large allocation of memory to run that rJava
+is not able to initially allocate to it. The amount of memory needed varies by
+the size of the data being modeled. For this example, we allocate 8GB of memory
+before loading the HMMRATAC package:
+```{r loadHMMRATAC}
+options(java.parameters = "-Xmx8000m")
+library(HMMRATAC)
+```
+
+### HMMR output files
+
+The following files are generated in an output folder from a run of HMMRATAC:
+
 
 # Session Info
 ```{r sessionInfo}

@@ -2,7 +2,7 @@ Package: HMMRATAC
 Title: HMMRATAC - a semi-supervised machine learning approach for identifying
     open chromatin regions from ATAC-Seq data using Hidden Markov Models.
 Description: The ability to efficiently represent and manipulate genomic
-Version: 0.0.8
+Version: 0.0.9
 Encoding: UTF-8
 Author: Tao Liu, Daniel Van Twisk
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>

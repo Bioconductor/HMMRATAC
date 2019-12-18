@@ -208,7 +208,10 @@ HMMRATAC <- function(bam,
     }
 
     hmmr <- rJava::new(J("HMMR_ATAC.Main_HMMR_Driver"))
-    status <- hmmr$main(args)
+    argParser <- rJava::new(J("HMMR_ATAC.ArgParser"), args, '1.29.0')
+
+    status <- hmmr$performHMMRATAC(argParser, args)
+    #status <- hmmr$main(args)
 
     outputs <- dir(dirname(output), full.names = TRUE)
     keep <- startsWith(outputs, paste0(output, "_"))
