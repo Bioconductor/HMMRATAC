@@ -48,7 +48,10 @@ identifying chromatin structure and transcription factor binding sites.
 [@hmmratac2019tarbell] 
 
 A typical analysis pipline begins with aligning sequencing reads to a reference
-genome. 
+genome, then using HMMRATAC to identify of accessible regions or "peaks" in the
+chromatin. Next motif enrichment can be performed with MEME, footprint
+identificaiton with CENTIPEDE, or differential analysis using Diffbind. Quality
+control measurments can take place after each of these steps using ATACseqQC.
 
 This Bioconductor package has been made to utilize the original Java program for
 HMMRATAC and make it availiable for use within Bioconductor.
@@ -62,7 +65,18 @@ BiocManager::install('HMMRATAC')
 
 # Example Pipeline
 
-We start by first obtaining a list of 
+The rest of this vignette will detail how to use this package and others 
+for the purpose of performing analysis on an ATACSeq sample.
+
+We start by first obtaining 
+
+## Generate necessary files using RSamtools
+
+
+
+## ATACseqQC
+
+
 
 ## HMMRATAC
 
@@ -224,6 +238,9 @@ the peak file (column 4 of the Name_peaks.gappedPeak file).
 
     Peak Score. Same score as in the .gappedPeak file.
 
+## DiffBind
+
+## CHiPseeker
 
 # Session Info
 ```{r sessionInfo}
