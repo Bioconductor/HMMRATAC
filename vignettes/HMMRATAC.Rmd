@@ -68,21 +68,28 @@ BiocManager::install('HMMRATAC')
 The rest of this vignette will detail how to use this package and others 
 for the purpose of performing analysis on an ATACSeq sample.
 
-We start by first obtaining 
+We begin with a BAM file containing pair-end ATAC-seq reads. Normally, this
+alignment is performed by a sequence aligner such as BOWTIE2 or BWA, but for the
+scope of this workflow, we will load a pre-aligned file.
 
-## Generate necessary files using RSamtools
-
-To begin, it is assumed that the user has a BAM file generater from an alligner.
-For this example, we will use a file included with the package.
 ```{r getBAM}
-library(Rsamtools)
 bam <- system.file("extdata", "65283_treat_rep1.chr22.bam", package="HMMRATAC",
                    mustwork = TRUE)
 ```
-We can use this to generate the remaining two files needed to run HMMRATAC using
-Rsamtools. Our next step is to create an index file. Rsamtools can do this with
-a sorted BAM file. We generate an index file as follow:
+
+## Generate necessary files using RSamtools
+
+The Rsamtools package provides a range of functionality to read and manipulate
+bam files. Rsamtools is the Bioconductor implementation of Samtools.
+
+Using the BAM file that we just loaded, we will generate the remaining two files
+needed to run HMMRATAC using Rsamtools. Our next step is to create an index
+file. Rsamtools can do this with a sorted BAM file. We generate an index file as
+follow:
+
 ```{r getIndex}
+library(Rsamtools)
+
 ## Generate sorted bam file and save to a temporary location.
 sortBam(file = bam, destination = tempfile())
 
@@ -107,6 +114,9 @@ write.table(genome_info, genome, col.names = FALSE, quote = FALSE)
 ```
 
 ## ATACseqQC
+
+ATACseqQC is a package used for quickly assesing the quality of ATAC-seq data.
+It specializes in the use of 
 
 After performing the initial alignment, the quality of the alignment can be
 assesed using ATACseqQC
@@ -139,14 +149,13 @@ featureAlignedHeatmap(sigs$signal,
                       n.tile=ncol(sigs$signal[[1]]))
 ```
 
-```{r 
-
 ## HMMRATAC
 
 First off, HMMRATAC requires a large allocation of memory to run that rJava
 is not able to initially allocate to it. The amount of memory needed varies by
 the size of the data being modeled. For this example, we allocate 8GB of memory
 before loading the HMMRATAC package:
+
 ```{r loadHMMRATAC}
 options(java.parameters = "-Xmx8000m")
 library(HMMRATAC)
@@ -307,9 +316,21 @@ the peak file (column 4 of the Name_peaks.gappedPeak file).
 
 ## DiffBind
 
+The DiffBind package specializes in identifying sites that are differentiall
+bound between two sample groups. It also contains functionality for processing
+peak sets, counting sequencing reads overlapping interals in peak sets, and
+identifying statistically significant differentially bound sites based on
+evidence of binding affinity.
+
 ## ChIPseeker
 
+The ChIPseeker package is meant to perform statistical testing of significant
+overlap amoung ChIP seq data sets. It also incorporates open access database GEO
+to allow users to compare their dataset to those availiable on GEO.
+
 ## Gviz
+
+
 
 # Session Info
 ```{r sessionInfo}
