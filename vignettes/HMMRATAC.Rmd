@@ -328,6 +328,32 @@ The ChIPseeker package is meant to perform statistical testing of significant
 overlap amoung ChIP seq data sets. It also incorporates open access database GEO
 to allow users to compare their dataset to those availiable on GEO.
 
+```{r readPeakFile}
+peak <- readPeakFile('65283_chr22_peaks.gappedPeak')
+```
+
+Display peak locations across entire genome
+
+```{r covplot}
+covplot(peak, weightCol="weights")
+```
+
+Perform peak annotation
+
+```{r peakAnnotation}
+peakAnno <- annotatePeak(files[[4]], tssRegion=c(-3000, 3000),
+                         TxDb=txdb, annoDb="org.Hs.eg.db")
+
+plotAnnoPie(peakAnno)
+
+upsetplot(peakAnno, vennpie=TRUE)
+
+plotDistToTSS(peakAnno,
+              title="Distribution of transcription factor-binding loci\nrelative to TSS")
+```
+
+
+
 ## Gviz
 
 
