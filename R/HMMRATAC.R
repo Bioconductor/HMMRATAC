@@ -106,7 +106,8 @@
 #'    bam = example_files[[1]],
 #'    index = example_files[[2]],
 #'    genome = example_files[[3]],
-#'    output = output
+#'    output = output,
+#'    window = 2500000
 #' )
 #' outputs
 #'
