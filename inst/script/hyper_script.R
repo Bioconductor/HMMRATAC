@@ -19,6 +19,9 @@ chrs <- bplapply(list(17), function(i) {
     bs[[paste0('chr', i)]]
 })
 
+peaks <- import.bed('/users/da42327_ca/monocytes/01_results/na_peaks.gappedpeak')
+pro <- promoters(txdb.hsapiens.ucsc.hg19.knowngene)
+
 siteseqs <- bplapply(seq_along(chrs), function(i) {
     seqs <- searchSeq(pwm, chrs[[i]], seqname = paste0('chr', i), min.score="80%", strand = "*")
     as(seqs, "GRanges")
@@ -59,7 +62,6 @@ perform_run_by_motif <- function(motif_id, pwm, bs, peaks, pro) {
     do.call(phyper, as.list(red))
 }
 
-
 motif_names <- head(names(pwm), 16)
 total_results <- bplapply(motif_names, perform_run_by_motif, pwm = pwm, bs = bs, peaks = peaks, pro = pro)
 
@@ -69,28 +71,3 @@ total_results <- bplapply(motif_names, perform_run_by_motif, pwm = pwm, bs = bs,
 ##      k = npromoters_with_tf_in_open_chromatin + npromoters_without_tf_in_open_chromatin) ## all promoters within open chromatin
 ## Step 2: Match motifs to peaks mapping and motifs to promoters
 
-pro <- promoters(TxDb.Hsapiens.UCSC.hg19.knownGene)
-ipro <- ranges(pro)
-peaks <- import.bed('/Users/da42327_ca/Monocytes/01_results/NA_peaks.gappedPeak')
-ipeaks <- ranges(peaks)
-imotifs <- ranges(iteseqs)
-
-motif_to_peak_mappings <- bplapply(siteseqs, function(site) {
-    subsetByOverlaps(site, peaks)
-})
-
-site_to_pro_counts <- bplapply(motif_to_peak_mappings, function(mot) {
-    table(countOverlaps(mot, pro) > 0)    
-})
-
-pvals <- bplapply(seq_along(motif_to_peak_mappings), function(i){
-    phyper(motif
-})
-
-## Step 4: Download KEGG pathways and aquire gene transcripts
-
-chromosome_locs <- transcripts(TxDb.Hsapiens.UCSC.hg19.knownGene)
-
-## Find enriched peaks / TFBS gene overlaps in Pathways
-
-## functional enrichment test
