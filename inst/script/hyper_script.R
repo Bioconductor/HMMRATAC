@@ -1,3 +1,4 @@
+#!/mnt/lustre/usr/global/centos7/R/3.6.1/bin/R
 
 library(BiocParallel)
 library(MotifDb)
@@ -8,19 +9,24 @@ library("TxDb.Hsapiens.UCSC.hg19.knownGene")
 library(KEGGREST)
 library(GenomicFeatures)
 
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) == 0)
+    stop("Provide gappedPeak file as an argument")
+
 ## Step 1: Match JASPAR TFs to chromosomes
 opts <- list()
 opts['species'] <- '9606'
 pfm <- getMatrixSet(JASPAR2018, opts)
 pwm <- toPWM(pfm)
+pwm <- pwm[1]
 
 bs <- BSgenome.Hsapiens.UCSC.hg19
 chrs <- bplapply(list(17), function(i) {
     bs[[paste0('chr', i)]]
 })
 
-peaks <- import.bed('/users/da42327_ca/monocytes/01_results/na_peaks.gappedpeak')
-pro <- promoters(txdb.hsapiens.ucsc.hg19.knowngene)
+peaks <- import.bed(paste0(args, "_peaks.gappedPeak")) #import.bed('/Users/da42327_ca/Monocytes/01_results/NA_peaks.gappedPeak')
+pro <- promoters(TxDb.Hsapiens.UCSC.hg19.knownGene)
 
 siteseqs <- bplapply(seq_along(chrs), function(i) {
     seqs <- searchSeq(pwm, chrs[[i]], seqname = paste0('chr', i), min.score="80%", strand = "*")
@@ -62,8 +68,14 @@ perform_run_by_motif <- function(motif_id, pwm, bs, peaks, pro) {
     do.call(phyper, as.list(red))
 }
 
-motif_names <- head(names(pwm), 16)
+motif_names <- names(pwm)
+motif_symbols <- vapply(pwm, function(motif) {
+    motif@tags$symbol
+}, character(1))
 total_results <- bplapply(motif_names, perform_run_by_motif, pwm = pwm, bs = bs, peaks = peaks, pro = pro)
+total_results <- matrix(total_results)
+rownames(total_results) <- motif_symbols
+write.table(total_results, file = paste0(args, "_total_results.txt"), colnames = TRUE)
 
 ##    c(q = npromoters_with_tf_in_open_chromatin, ## drawn white balls = promoters with TF in open chromatin
 ##      m = npromoters_with_tf, ## total white = promoters with TF
