@@ -68,6 +68,8 @@ BiocManager::install('HMMRATAC')
 The rest of this vignette will detail how to use this package and others 
 for the purpose of performing analysis on an ATACSeq sample.
 
+## Data source
+
 We begin with a BAM file containing pair-end ATAC-seq reads. Normally, this
 alignment is performed by a sequence aligner such as BOWTIE2 or BWA, but for the
 scope of this workflow, we will load a pre-aligned file.
@@ -324,7 +326,108 @@ peak sets, counting sequencing reads overlapping interals in peak sets, and
 identifying statistically significant differentially bound sites based on
 evidence of binding affinity.
 
-## CSAW
+```{r diffbind, eval=FALSE}
+library(DiffBind)
+library(rGREAT)
+
+dba <- dba(sampleSheet='sample_sheet.csv')
+count <- dba.count(dba, summits=500)
+contrast <- dba.contrast(count, categories=DBA_CONDITION)
+analyze <- dba.analyze(contrast)
+bed <- dba.report(analyze)
+```
+
+## TFBS analysis
+
+```{r TFBS, eval=FALSE}
+library(BiocParallel)
+library(MotifDb)
+library(TFBSTools)
+library(JASPAR2018)
+library("BSgenome.Hsapiens.UCSC.hg19")
+library("TxDb.Hsapiens.UCSC.hg19.knownGene")
+library(KEGGREST)
+library(GenomicFeatures)
+
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) == 0)
+    stop("Provide gappedPeak file as an argument")
+
+## Step 1: Match JASPAR TFs to chromosomes
+opts <- list()
+opts['species'] <- '9606'
+pfm <- getMatrixSet(JASPAR2018, opts)
+pwm <- toPWM(pfm)
+#pwm <- pwm[1:10]
+
+bs <- BSgenome.Hsapiens.UCSC.hg19
+chrs <- lapply(1:22, function(i) {
+    bs[[paste0('chr', i)]]
+})
+
+peaks <- import.bed(paste0(args, '_peaks.gappedPeak')) #import.bed('/Users/da42327_ca/Monocytes/01_results/NA_peaks.gappedPeak')
+pro <- promoters(TxDb.Hsapiens.UCSC.hg19.knownGene)
+
+## Step 2: Perform ORA to find signficant TFBS's
+run_seq3 <- function(seqname, motif_id, pwms, bsgenome, peaks, promoters) {
+    message("Motif ID: ", motif_id, " -- Seqname: ", seqname)
+    ## Find binding sites on chromosome
+    siteseq <- searchSeq(pwms[motif_id], bsgenome[[seqname]], seqname = seqname, min.score="80%", strand = "*")
+    tfbs <- as(siteseq, "GRanges")
+    promoters_chr <- promoters[seqnames(promoters) == seqname]
+    peaks_chr <- peaks[seqnames(peaks) == seqname]
+
+    ## Get promoters with TF
+    idx <- promoters_chr %over% tfbs
+    promoters_with_tf <- promoters_chr[idx]
+    promoters_without_tf <- promoters_chr[!idx]
+
+    ## Summary statistics for phyper
+    npromoters_with_tf <- sum(countOverlaps(promoters_chr, tfbs) > 0)
+    npromoters_without_tf <- length(promoters_chr) - npromoters_with_tf
+
+    npromoters_with_tf_in_open_chromatin <- sum(countOverlaps(peaks_chr, promoters_with_tf) > 0)
+    npromoters_without_tf_in_open_chromatin <- sum(countOverlaps(peaks_chr, promoters_without_tf) > 0)
+
+    ## Return values
+    c(q = npromoters_with_tf_in_open_chromatin,
+      m = npromoters_with_tf,
+      n = npromoters_without_tf,
+      k = npromoters_with_tf_in_open_chromatin + npromoters_without_tf_in_open_chromatin)
+}
+
+perform_run_by_motif <- function(motif_id, pwm, bs, peaks, pro) {
+    message('Running Motif: ', motif_id)
+    seqnames <- paste0('chr', 1:22)
+    motif_result <- lapply(seqnames, run_seq3, motif_id = motif_id, pwms = pwm, bsgenome = bs, peaks = peaks, promoters = pro)
+    red <- Reduce(`+`, motif_result)
+
+perform_run_by_motif <- function(motif_id, pwm, bs, peaks, pro) {
+    message('Running Motif: ', motif_id)
+    seqnames <- paste0('chr', 1:22)
+    motif_result <- lapply(seqnames, run_seq3, motif_id = motif_id, pwms = pwm, bsgenome = bs, peaks = peaks, promoters = pro)
+    red <- Reduce(`+`, motif_result)
+    do.call(phyper, as.list(red))
+}
+
+motif_names <- names(pwm)
+motif_symbols <- vapply(pwm, function(motif) {
+    motif@name
+}, character(1))
+total_results <- lapply(motif_names, perform_run_by_motif, pwm = pwm, bs = bs, peaks = peaks, pro = pro)
+total_results <- matrix(total_results)
+rownames(total_results) <- motif_symbols
+write.table(total_results, file = paste0(args, "_total_results.txt"), col.names = TRUE, quote=FALSE)
+```
+
+## rGREAT functional analysis
+
+```{r rGREAT, eval=FALSE}
+job <- submitGreatJob(bed)
+tb <- getEnrichmentTables(job)
+look <- tb[[1]]
+res <- look[look$Hyper_Adjp_BH < 0.05,]
+```
 
 ## ChIPseeker
 
@@ -353,7 +456,7 @@ plotAnnoPie(peakAnno)
 upsetplot(peakAnno, vennpie=TRUE)
 
 plotDistToTSS(peakAnno,
-              title="Distribution of transcription factor-binding loci\nrelative to TSS")
+              title="Distribution of transcription factor-binding loci relative to TSS")
 ```
 
 
