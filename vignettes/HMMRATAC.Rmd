@@ -66,7 +66,44 @@ BiocManager::install('HMMRATAC')
 # Example Pipeline
 
 The rest of this vignette will detail how to use this package and others 
-for the purpose of performing analysis on an ATACSeq sample.
+for the purpose of performing several types analysis of on an ATACSeq sample to
+confirm some experimental results.
+
+Our example stems from the article
+"β-Glucan Reverses the Epigenetic State of LPS-Induced Immunological Tolerance"
+[@novakovic2016β-glucan]. In this article, it can be understand that monocytes
+undergo functional reprogramming as apart of the innate immune response after
+exposure to microbial lipopolysaccharide (LPS). LPS-treated monocytes fail to
+accumulate active histone markers in promoters ad enhancers of lipid metabolism
+and phagocytic pathways. In contrast, β-glucan reverses the LPS-induced
+tolerance and reinduces their capacity for cytokine production.
+
+An integrated epigenomic apprach is envoked to characterize the molecular events
+involved with LPS-induced tolerance in a time-dependant manner. Time-dependant
+ATACseq was performed on naive macrophages, LPS-exposed tolerized macrophages,
+and BG-exposed trained macrophages. Measurements were taken at one hour, 4 hour,
+24 hour, and 6 day time frames.
+
+This ATACseq data is avaible from the
+[Short Reads Archieve (SRA)](https://www.ncbi.nlm.nih.gov/Traces/study/?acc=SRP090300&o=acc_s%3Aa)
+
+In this example pipeline, we seek to validate the findings of the article by
+performing transcription factor and functional analysis with the following
+steps:
+- Sequence alignment of reads using Bowtie2
+- Use of Rsamtools to generate bam files and file necessary for peak-calling
+- Quality control using ATACseqQC
+- Using HMMRATAC for peak-calling
+- ChIPSeekeR
+- Using diffbind to perform differential binding ananlysis between the treatments
+- A pipeline to identify significant transcription factors using MotifDb and TFBSTools
+- A pipeline for functional enrichment analysis using rGREAT
+- gViz
+
+Due to the size of the files and the complexity of computations being
+performed, most of the functionality of the vignette is not meant to be run by
+the user in the context of an example. Instead, the results of the computations
+will be included at the end of their section.
 
 ## Data source
 
@@ -171,7 +208,7 @@ generated, we can run the HMMRATAC package's main function.
 HMMRATAC(bam = bam, index = index, genome = genome)
 ```
 
-### HMMR output files
+### HMMRATAC output files
 
 The following files are generated in an output folder from a run of HMMRATAC:
 
@@ -326,9 +363,11 @@ peak sets, counting sequencing reads overlapping interals in peak sets, and
 identifying statistically significant differentially bound sites based on
 evidence of binding affinity.
 
+Here, we create a sampleSheet that describes the treatments and provide it as
+input.
+
 ```{r diffbind, eval=FALSE}
 library(DiffBind)
-library(rGREAT)
 
 dba <- dba(sampleSheet='sample_sheet.csv')
 count <- dba.count(dba, summits=500)
@@ -349,10 +388,6 @@ library("TxDb.Hsapiens.UCSC.hg19.knownGene")
 library(KEGGREST)
 library(GenomicFeatures)
 
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) == 0)
-    stop("Provide gappedPeak file as an argument")
-
 ## Step 1: Match JASPAR TFs to chromosomes
 opts <- list()
 opts['species'] <- '9606'
@@ -365,7 +400,6 @@ chrs <- lapply(1:22, function(i) {
     bs[[paste0('chr', i)]]
 })
 
-peaks <- import.bed(paste0(args, '_peaks.gappedPeak')) #import.bed('/Users/da42327_ca/Monocytes/01_results/NA_peaks.gappedPeak')
 pro <- promoters(TxDb.Hsapiens.UCSC.hg19.knownGene)
 
 ## Step 2: Perform ORA to find signficant TFBS's
@@ -410,19 +444,25 @@ perform_run_by_motif <- function(motif_id, pwm, bs, peaks, pro) {
     do.call(phyper, as.list(red))
 }
 
-motif_names <- names(pwm)
-motif_symbols <- vapply(pwm, function(motif) {
-    motif@name
-}, character(1))
-total_results <- lapply(motif_names, perform_run_by_motif, pwm = pwm, bs = bs, peaks = peaks, pro = pro)
-total_results <- matrix(total_results)
-rownames(total_results) <- motif_symbols
-write.table(total_results, file = paste0(args, "_total_results.txt"), col.names = TRUE, quote=FALSE)
+run_motif_analysis <- function(peak_file_name, output_file_name) {
+    motif_names <- names(pwm)
+    motif_symbols <- vapply(pwm, function(motif) {motif@name}, character(1))
+    total_results <- lapply(motif_names, perform_run_by_motif, pwm = pwm, bs = bs, peaks = peaks, pro = pro)
+    total_results <- matrix(total_results)
+    rownames(total_results) <- motif_symbols
+    write.table(total_results, file = output_file_name, col.names = TRUE, quote=FALSE)
+}
+
+peak_LPS <- system.file("extdata", "sigs_LPS.bed", package="HMMRATAC")
+peak_BG <- system.file("extdata", "sigs_BG.bed", package="HMMRATAC")
+run_motif_analysis(peaks_LPS, "sig_motifs_LPS.txt")
+run_motif_analysis(peals_BG, "sig_motifs_BG.txt")
 ```
 
 ## rGREAT functional analysis
 
 ```{r rGREAT, eval=FALSE}
+library(rGREAT)
 job <- submitGreatJob(bed)
 tb <- getEnrichmentTables(job)
 look <- tb[[1]]
