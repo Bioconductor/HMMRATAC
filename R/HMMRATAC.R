@@ -90,7 +90,9 @@
 #' @return matrix A matrix(?)
 #'
 #' @examples
-#' example_data <- system.file(package="HMMRATAC", "extdata")
+#' options(java.parameters = "-Xmx8000m")
+#'
+#' example_data <- system.file(package="HMMRATACData", "data")
 #' example_files <- dir(example_data, recursive = TRUE, full = TRUE)
 #' basename(example_files)
 #'
@@ -107,12 +109,11 @@
 #'    index = example_files[[2]],
 #'    genome = example_files[[3]],
 #'    output = output,
-#'    window = 2500000
+#'    window = 25000
 #' )
 #' outputs
 #'
 #' @import rJava
-#' @importFrom Rsamtools BamFile
 #' @importFrom rtracklayer BEDFile
 #' @export
 HMMRATAC <- function(bam,

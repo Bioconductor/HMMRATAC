@@ -8,7 +8,7 @@ Description: Hidden Markov ModeleR for ATAC-seq (HMMRATAC) is a semi-supervised
     nucleosomal regions. The relationship between the layers of signals at open
     chromatin. This package is an R implementation of the original java package
     meant to function within Bioconductor.
-Version: 0.0.16
+Version: 0.0.17
 Encoding: UTF-8
 Author: Tao Liu, Daniel Van Twisk
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
@@ -17,12 +17,17 @@ biocViews: Genetics, Infrastructure, Sequencing, Annotation, Coverage,
 Depends: R (>= 3.5.0),
          rJava
 Imports: rtracklayer
-License: GPL >= 3.0
+License: Artistic-2.0
 RoxygenNote: 6.1.1
 Suggests:
     ATACseqQC,
+    BiocStyle,
     ChIPseeker,
     DiffBind,
-    Rsamtools,
     Gviz,
+    HMMRATACData,
+    JASPAR2018,
+    Rsamtools,
+    TFBSTools,
+    rGREAT,
     testthat

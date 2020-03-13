@@ -1,16 +1,18 @@
 ---
 title: "HMMRATAC Guide"
-author: "Daniel Van Twisk, Evan Tarbell"
-date: "`r BiocStyle::doc_date()`"
-package: "`r BiocStyle::pkg_ver('HMMRATAC')`"
+author:
+- name: Daniel Van Twisk
+  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
+- name: Evan Tarbell
+  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
 bibliography: bibliography.bib
-csl: nature.csl
+output:
+  BiocStyle::html_document:
+      toc: true
 vignette: >
   %\VignetteIndexEntry{HMMRATAC Vignette}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-output:
-  BiocStyle::html_document
 ---
 
 ```{r, echo=FALSE, results="hide", warning=FALSE, message=FALSE}
@@ -19,7 +21,6 @@ suppressPackageStartupMessages({
   library(ChIPpeakAnno)
   library(BSgenome.Hsapiens.UCSC.hg19)
   library(TxDb.Hsapiens.UCSC.hg19.knownGene)
-  library(phastCons100way.UCSC.hg19)
   library(MotifDb)
   library(GenomicAlignments)
 })
@@ -105,15 +106,24 @@ performed, most of the functionality of the vignette is not meant to be run by
 the user in the context of an example. Instead, the results of the computations
 will be included at the end of their section.
 
+Pleae load the data from the `HMMRATACData` package for these computations
+```{r HMMRATACData}
+library(HMMRATACData)
+data(HMMRATACData)
+```
+
 ## Data source
 
 We begin with a BAM file containing pair-end ATAC-seq reads. Normally, this
 alignment is performed by a sequence aligner such as BOWTIE2 or BWA, but for the
-scope of this workflow, we will load a pre-aligned file.
+scope of this workflow, we will simply give an example of how to run bowtie on
+pairend count data like what can be obtained from the SRA link above. The
+vignette does not require that the reader performs this step.
 
-```{r getBAM}
-bam <- system.file("extdata", "65283_treat_rep1.chr22.bam", package="HMMRATAC",
-                   mustwork = TRUE)
+The `${SRR}` correspond to the name of a sample.
+
+```
+bowtie --chunkmbs 8000 -S -t hg19 -1 ${SRR}.1.fastq -2 ${SRR}.2.fastq ${SRR}.sam
 ```
 
 ## Generate necessary files using RSamtools
@@ -126,7 +136,7 @@ needed to run HMMRATAC using Rsamtools. Our next step is to create an index
 file. Rsamtools can do this with a sorted BAM file. We generate an index file as
 follow:
 
-```{r getIndex}
+```{r getIndex, eval=FALSE}
 library(Rsamtools)
 
 ## Generate sorted bam file and save to a temporary location.
@@ -137,7 +147,7 @@ index <- indexBam(file = bam)
 ```
 The last file that we will generate is the `genome.info` file. This files shows
 
-```{r getGenomeInfo}
+```{r getGenomeInfo, eval=FALSE}
 ## Get list of headers.
 genome <- scanBamHeader(file = bam)
 
@@ -197,14 +207,14 @@ is not able to initially allocate to it. The amount of memory needed varies by
 the size of the data being modeled. For this example, we allocate 8GB of memory
 before loading the HMMRATAC package:
 
-```{r loadHMMRATAC}
+```{r loadHMMRATAC, eval=FALSE}
 options(java.parameters = "-Xmx8000m")
 library(HMMRATAC)
 ```
 Using the original bam file as well as the index and genome info files that we
 generated, we can run the HMMRATAC package's main function.
 
-```{r runHMMRATAC}
+```{r runHMMRATAC, eval=FALSE}
 HMMRATAC(bam = bam, index = index, genome = genome)
 ```
 
@@ -379,13 +389,11 @@ bed <- dba.report(analyze)
 ## TFBS analysis
 
 ```{r TFBS, eval=FALSE}
-library(BiocParallel)
 library(MotifDb)
 library(TFBSTools)
 library(JASPAR2018)
 library("BSgenome.Hsapiens.UCSC.hg19")
 library("TxDb.Hsapiens.UCSC.hg19.knownGene")
-library(KEGGREST)
 library(GenomicFeatures)
 
 ## Step 1: Match JASPAR TFs to chromosomes
@@ -459,6 +467,8 @@ run_motif_analysis(peaks_LPS, "sig_motifs_LPS.txt")
 run_motif_analysis(peals_BG, "sig_motifs_BG.txt")
 ```
 
+
+
 ## rGREAT functional analysis
 
 ```{r rGREAT, eval=FALSE}
@@ -475,19 +485,19 @@ The ChIPseeker package is meant to perform statistical testing of significant
 overlap amoung ChIP seq data sets. It also incorporates open access database GEO
 to allow users to compare their dataset to those availiable on GEO.
 
-```{r readPeakFile}
+```{r readPeakFile, eval=FALSE}
 peak <- readPeakFile('65283_chr22_peaks.gappedPeak')
 ```
 
 Display peak locations across entire genome
 
-```{r covplot}
+```{r covplot, eval=FALSE}
 covplot(peak, weightCol="weights")
 ```
 
 Perform peak annotation
 
-```{r peakAnnotation}
+```{r peakAnnotation, eval=FALSE}
 peakAnno <- annotatePeak(files[[4]], tssRegion=c(-3000, 3000),
                          TxDb=txdb, annoDb="org.Hs.eg.db")
 
@@ -498,11 +508,6 @@ upsetplot(peakAnno, vennpie=TRUE)
 plotDistToTSS(peakAnno,
               title="Distribution of transcription factor-binding loci relative to TSS")
 ```
-
-
-
-## Gviz
-
 
 
 # Session Info
