@@ -1,6 +1,6 @@
 Package: HMMRATAC
 Title: HMMRATAC - a semi-supervised machine learning approach for identifying
-    open chromatin regions from ATAC-Seq data using Hidden Markov Models.
+    open chromatin regions from ATAC-Seq data using Hidden Markov Models
 Description: Hidden Markov ModeleR for ATAC-seq (HMMRATAC) is a semi-supervised
     machine learning appraoch for identifying open chromatin regions from
     ATAC-seq data. The ATAC-seq data is decomposed into different layers of
@@ -8,8 +8,9 @@ Description: Hidden Markov ModeleR for ATAC-seq (HMMRATAC) is a semi-supervised
     nucleosomal regions. The relationship between the layers of signals at open
     chromatin. This package is an R implementation of the original java package
     meant to function within Bioconductor.
-Version: 0.0.17
+Version: 0.99.0
 Encoding: UTF-8
+VignetteBuilder: knitr
 Author: Tao Liu, Daniel Van Twisk
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Genetics, Infrastructure, Sequencing, Annotation, Coverage,
@@ -29,5 +30,6 @@ Suggests:
     JASPAR2018,
     Rsamtools,
     TFBSTools,
+    knitr,
     rGREAT,
     testthat
